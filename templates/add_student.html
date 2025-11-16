@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Add Student - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Add New Student
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="student_id" class="form-label">Student ID *</label>
+                                <input type="text" class="form-control" id="student_id" name="student_id" required>
+                                <small class="form-text text-muted">Unique identifier for the student</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="class_name" class="form-label">Class *</label>
+                                <select class="form-control" id="class_name" name="class_name" required>
+                                    <option value="" disabled selected>Select a class</option>
+                                    {% if available_classes %}
+                                        {% for class_obj in available_classes %}
+                                            <option value="{{ class_obj.class_name if class_obj.class_name else class_obj[0] }}">
+                                                {{ class_obj.class_name if class_obj.class_name else class_obj[0] }}
+                                            </option>
+                                        {% endfor %}
+                                    {% else %}
+                                        <option value="" disabled>No classes available - Please add a class first</option>
+                                    {% endif %}
+                                </select>
+                                {% if available_classes %}
+                                    <small class="form-text text-muted">Select from available classes</small>
+                                {% else %}
+                                    <small class="form-text text-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> 
+                                        No classes found. <a href="{{ url_for('add_class') }}">Add a class first</a>
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Student Photo *</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                        <small class="form-text text-muted">Upload a clear frontal photo of the student (JPG, PNG)</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div id="imagePreview" class="text-center" style="display: none;">
+                            <img id="preview" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('students') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Add Student
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('preview').src = e.target.result;
+            document.getElementById('imagePreview').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+</script>
+{% endblock %}

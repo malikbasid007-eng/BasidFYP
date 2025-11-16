@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Students - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-users me-2"></i>
+                Student Management
+            </h2>
+            <a href="{{ url_for('add_student') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus me-2"></i>Add New Student
+            </a>
+        </div>
+        
+        {% if students %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-primary">
+                            <tr>
+                                <th>Photo</th>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Class</th>
+                                <th>Registered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for student in students %}
+                            <tr>
+                                <td>
+                                    {% if student.image_path %}
+                                    <img src="{{ url_for('serve_student_image', filename=student.image_path.split('/')[-1]) }}" 
+                                         alt="{{ student.name }}" 
+                                         class="rounded-circle" width="40" height="40" 
+                                         style="object-fit: cover;"
+                                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px; display: none;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    {% else %}
+                                    <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center" 
+                                         style="width: 40px; height: 40px;">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    {% endif %}
+                                </td>
+                                <td><strong>{{ student.student_id }}</strong></td>
+                                <td>{{ student.name }}</td>
+                                <td>{{ student.email }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ student.class_name }}</span>
+                                </td>
+                                <td>{{ student.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    <div class="btn-group" role="group" aria-label="Student actions">
+                                        <!-- View Details Button -->
+                                        <a href="{{ url_for('student_details', student_id=student.id) }}" 
+                                           class="btn btn-sm btn-outline-info" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        <!-- Edit Button -->
+                                        {% set can_edit = false %}
+                                        {% if user.role == 'admin' %}
+                                            {% set can_edit = true %}
+                                        {% elif user.role == 'teacher' %}
+                                            {% for tc in user_classes %}
+                                                {% if tc.class_name == student.class_name %}
+                                                    {% set can_edit = true %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+                                        
+                                        {% if can_edit %}
+                                            <a href="{{ url_for('edit_student', student_id=student.id) }}" 
+                                               class="btn btn-sm btn-outline-warning" title="Edit Student">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        <!-- Delete Button -->
+                                        {% if can_edit %}
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    title="Delete Student" data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal{{ student.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-users fa-5x text-muted mb-3"></i>
+            <h3 class="text-muted">No Students Found</h3>
+            <p class="text-muted mb-4">Get started by adding your first student to the system.</p>
+            <a href="{{ url_for('add_student') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Add First Student
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modals -->
+{% if students %}
+    {% for student in students %}
+    <div class="modal fade" id="deleteModal{{ student.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ student.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel{{ student.id }}">Confirm Delete</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h4>Are you sure?</h4>
+                        <p class="text-muted">Do you want to delete <strong>{{ student.name }}</strong> ({{ student.student_id }}) from the system?</p>
+                        <div class="alert alert-warning" role="alert">
+                            <small><i class="fas fa-warning"></i> This action cannot be undone and will remove all attendance records for this student.</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <form method="POST" action="{{ url_for('delete_student', student_id=student.id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete Student
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+{% endblock %}

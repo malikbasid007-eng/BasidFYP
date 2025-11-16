@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block title %}Take Attendance - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-camera me-2"></i>
+                    Take Class Attendance
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Attendance Form -->
+                <form method="POST" enctype="multipart/form-data" id="attendanceForm">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="session_name" class="form-label">Session Name *</label>
+                            <input type="text" class="form-control" id="session_name" name="session_name" 
+                                   placeholder="e.g., Morning Lecture, Lab Session" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="class_name" class="form-label">Class *</label>
+                            <select class="form-control" id="class_name" name="class_name" required>
+                                <option value="">Select a class</option>
+                                {% for class in classes %}
+                                <option value="{{ class }}">{{ class }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Photo Capture Options -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-primary">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-video me-2"></i>
+                                        Capture from Webcam
+                                    </h6>
+                                </div>
+                                <div class="card-body text-center">
+                                    <video id="video" width="300" height="200" style="display: none;" autoplay></video>
+                                    <canvas id="canvas" width="300" height="200" style="display: none;"></canvas>
+                                    <div id="photoPreview" style="display: none;">
+                                        <img id="capturedPhoto" src="" alt="Captured Photo" class="img-fluid" style="max-height: 200px;">
+                                    </div>
+                                    
+                                    <div class="mt-3">
+                                        <button type="button" id="startCamera" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-video me-1"></i>Start Camera
+                                        </button>
+                                        <button type="button" id="capturePhoto" class="btn btn-success btn-sm" style="display: none;">
+                                            <i class="fas fa-camera me-1"></i>Capture Photo
+                                        </button>
+                                        <button type="button" id="retakePhoto" class="btn btn-warning btn-sm" style="display: none;">
+                                            <i class="fas fa-redo me-1"></i>Retake
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-upload me-2"></i>
+                                        Upload Photo
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <input type="file" class="form-control" id="group_photo" name="group_photo" accept="image/*">
+                                    <small class="form-text text-muted">Upload a group photo of the class</small>
+                                    
+                                    <div id="uploadPreview" class="mt-3 text-center" style="display: none;">
+                                        <img id="uploadedPhoto" src="" alt="Uploaded Photo" class="img-fluid" style="max-height: 200px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-success btn-lg" id="processAttendance">
+                            <i class="fas fa-cogs me-2"></i>Process Attendance
+                        </button>
+                    </div>
+                    
+                    <!-- Hidden input for webcam captured image -->
+                    <input type="hidden" id="webcamData" name="webcam_data">
+                </form>
+            </div>
+        </div>
+
+        <!-- Instructions Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Instructions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>For best results:</h6>
+                        <ul>
+                            <li>Ensure good lighting in the classroom</li>
+                            <li>Students should face the camera</li>
+                            <li>Avoid shadows on faces</li>
+                            <li>Keep a reasonable distance from the group</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Photo Requirements:</h6>
+                        <ul>
+                            <li>Clear, high-resolution image</li>
+                            <li>All students visible in the frame</li>
+                            <li>Minimum face size for recognition</li>
+                            <li>Supported formats: JPG, PNG</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let video = document.getElementById('video');
+let canvas = document.getElementById('canvas');
+let context = canvas.getContext('2d');
+let startCameraBtn = document.getElementById('startCamera');
+let capturePhotoBtn = document.getElementById('capturePhoto');
+let retakePhotoBtn = document.getElementById('retakePhoto');
+let webcamDataInput = document.getElementById('webcamData');
+
+// Start camera
+startCameraBtn.addEventListener('click', function() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+            video.srcObject = stream;
+            video.style.display = 'block';
+            startCameraBtn.style.display = 'none';
+            capturePhotoBtn.style.display = 'inline-block';
+        })
+        .catch(function(error) {
+            alert('Error accessing camera: ' + error.message);
+        });
+});
+
+// Capture photo
+capturePhotoBtn.addEventListener('click', function() {
+    context.drawImage(video, 0, 0, 300, 200);
+    let dataURL = canvas.toDataURL('image/jpeg');
+    
+    document.getElementById('capturedPhoto').src = dataURL;
+    document.getElementById('photoPreview').style.display = 'block';
+    webcamDataInput.value = dataURL;
+    
+    video.style.display = 'none';
+    capturePhotoBtn.style.display = 'none';
+    retakePhotoBtn.style.display = 'inline-block';
+    
+    // Stop camera stream
+    let stream = video.srcObject;
+    let tracks = stream.getTracks();
+    tracks.forEach(track => track.stop());
+});
+
+// Retake photo
+retakePhotoBtn.addEventListener('click', function() {
+    document.getElementById('photoPreview').style.display = 'none';
+    webcamDataInput.value = '';
+    startCameraBtn.style.display = 'inline-block';
+    retakePhotoBtn.style.display = 'none';
+});
+
+// File upload preview
+document.getElementById('group_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('uploadedPhoto').src = e.target.result;
+            document.getElementById('uploadPreview').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+// Form submission with proper handling
+document.getElementById('attendanceForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Show processing indicator
+    let submitBtn = document.getElementById('processAttendance');
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+    submitBtn.disabled = true;
+    
+    // Create FormData from the form
+    let formData = new FormData(this);
+    
+    // If webcam data exists, add it to FormData
+    if (webcamDataInput.value) {
+        formData.set('webcam_data', webcamDataInput.value);
+        // Remove file input if webcam is used
+        formData.delete('group_photo');
+    }
+    
+    // Submit via fetch with proper error handling
+    fetch(this.action || window.location.pathname, {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            return response.text();
+        }
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }).then(html => {
+        // Replace current page content with response
+        document.open();
+        document.write(html);
+        document.close();
+    }).catch(error => {
+        console.error('Attendance processing error:', error);
+        alert('Error processing attendance: ' + error.message);
+        
+        // Reset button
+        submitBtn.innerHTML = '<i class="fas fa-cogs me-2"></i>Process Attendance';
+        submitBtn.disabled = false;
+    });
+});
+
+</script>
+{% endblock %}

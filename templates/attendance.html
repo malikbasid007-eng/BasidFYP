@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Sessions - Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>
+                <i class="fas fa-clipboard-check me-2"></i>
+                Attendance Sessions
+            </h2>
+            <a href="{{ url_for('take_attendance') }}" class="btn btn-success">
+                <i class="fas fa-camera me-2"></i>Take New Attendance
+            </a>
+        </div>
+        
+        {% if sessions %}
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Session</th>
+                                <th>Class</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Students</th>
+                                <th>Attendance</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                            <tr>
+                                <td><strong>{{ session.session_name }}</strong></td>
+                                <td>
+                                    <span class="badge bg-info">{{ session.class_name }}</span>
+                                </td>
+                                <td>{{ session.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ session.time.strftime('%H:%M') }}</td>
+                                <td>
+                                    <span class="text-muted">{{ session.total_students }} total</span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ session.present_students }}/{{ session.total_students }}</span>
+                                        <div class="progress" style="width: 100px; height: 8px;">
+                                            {% set percentage = (session.present_students / session.total_students * 100) if session.total_students > 0 else 0 %}
+                                            <div class="progress-bar bg-success" 
+                                                 style="width: {{ percentage }}%"></div>
+                                        </div>
+                                        <span class="ms-2 small text-muted">{{ "%.1f"|format(percentage) }}%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_attendance', session_id=session.id) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="View Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-clipboard-check fa-5x text-muted mb-3"></i>
+            <h3 class="text-muted">No Attendance Sessions</h3>
+            <p class="text-muted mb-4">Start taking attendance to see session records here.</p>
+            <a href="{{ url_for('take_attendance') }}" class="btn btn-success btn-lg">
+                <i class="fas fa-camera me-2"></i>Take First Attendance
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

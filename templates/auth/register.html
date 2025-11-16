@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Register New User{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Register New User</h1>
+        <a href="{{ url_for('dashboard') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Registration Form -->
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user-plus"></i> User Registration
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        
+                        <!-- Basic Information -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="username" class="form-label">Username *</label>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="Enter unique username" required>
+                                    <small class="form-text text-muted">
+                                        Username must be unique and will be used for login
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                           placeholder="Enter email address" required>
+                                    <small class="form-text text-muted">
+                                        Must be a valid email address
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Full Name and Department -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="full_name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="full_name" name="full_name" 
+                                           placeholder="Enter full name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="department" class="form-label">Department</label>
+                                    <input type="text" class="form-control" id="department" name="department" 
+                                           placeholder="e.g., Computer Science, Mathematics">
+                                    <small class="form-text text-muted">
+                                        Department or faculty (optional)
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Role Selection -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="role" class="form-label">User Role *</label>
+                                    <select class="form-control" id="role" name="role" required>
+                                        <option value="">Select Role</option>
+                                        <option value="teacher">Teacher</option>
+                                        <option value="admin">Administrator</option>
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        Teachers can manage their own classes, Admins have full access
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Password Section -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="password" class="form-label">Password *</label>
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Enter password" required>
+                                    <small class="form-text text-muted">
+                                        Password must be at least 6 characters long
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="confirm_password" class="form-label">Confirm Password *</label>
+                                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" 
+                                           placeholder="Confirm password" required>
+                                    <small class="form-text text-muted">
+                                        Must match the password above
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- Form Actions -->
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Register User
+                            </button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary ml-2">Cancel</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-info-circle"></i> User Registration Guidelines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold">Teacher Role:</h6>
+                            <ul class="small">
+                                <li>Can create and manage their own classes</li>
+                                <li>Can add students to their classes</li>
+                                <li>Can take attendance for their classes</li>
+                                <li>Can view attendance reports for their classes</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="font-weight-bold">Administrator Role:</h6>
+                            <ul class="small">
+                                <li>Full access to all system features</li>
+                                <li>Can manage all users and classes</li>
+                                <li>Can view all attendance data</li>
+                                <li>Can register new users</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <strong>Note:</strong> Only administrators can register new users. The newly registered user will receive their login credentials and can start using the system immediately.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Password confirmation validation
+document.getElementById('confirm_password').addEventListener('input', function() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = this.value;
+    
+    if (password !== confirmPassword) {
+        this.setCustomValidity('Passwords do not match');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Password strength indicator
+document.getElementById('password').addEventListener('input', function() {
+    const password = this.value;
+    const confirmPasswordField = document.getElementById('confirm_password');
+    
+    // Reset confirm password validation when main password changes
+    confirmPasswordField.setCustomValidity('');
+    
+    // Simple password strength validation
+    if (password.length < 6 && password.length > 0) {
+        this.setCustomValidity('Password must be at least 6 characters long');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+
+// Username validation
+document.getElementById('username').addEventListener('input', function() {
+    const username = this.value;
+    
+    // Basic username validation (alphanumeric and underscores)
+    const usernameRegex = /^[a-zA-Z0-9_]+$/;
+    
+    if (username.length > 0 && !usernameRegex.test(username)) {
+        this.setCustomValidity('Username can only contain letters, numbers, and underscores');
+    } else {
+        this.setCustomValidity('');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Group Attendance System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="hero-section text-center py-5 mb-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 10px;">
+            <h1 class="display-4 mb-3">
+                <i class="fas fa-camera me-3"></i>
+                Group Image-based Class Attendance System
+            </h1>
+            <p class="lead mb-4">
+                Automated attendance tracking using computer vision and face recognition technology
+            </p>
+            <a href="{{ url_for('take_attendance') }}" class="btn btn-light btn-lg me-3">
+                <i class="fas fa-camera me-2"></i>Take Attendance
+            </a>
+            <a href="{{ url_for('add_student') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-user-plus me-2"></i>Add Student
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-camera-retro fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Capture Group Photo</h5>
+                <p class="card-text">Take a group photo of your class using camera or webcam for automated attendance.</p>
+                <a href="{{ url_for('take_attendance') }}" class="btn btn-primary">Get Started</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-search fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">Face Detection</h5>
+                <p class="card-text">Advanced OpenCV algorithms automatically detect individual faces in group photos.</p>
+                <a href="{{ url_for('students') }}" class="btn btn-success">View Students</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-user-check fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title">Face Recognition</h5>
+                <p class="card-text">Compare detected faces with student database for accurate identification.</p>
+                <a href="{{ url_for('attendance') }}" class="btn btn-warning">View Attendance</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card h-100 border-0 shadow-sm">
+            <div class="card-body text-center">
+                <div class="feature-icon mb-3">
+                    <i class="fas fa-chart-pie fa-3x text-info"></i>
+                </div>
+                <h5 class="card-title">Statistics & Reports</h5>
+                <p class="card-text">Generate comprehensive attendance reports and view detailed statistics.</p>
+                <a href="{{ url_for('statistics') }}" class="btn btn-info">View Statistics</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-5">
+    <div class="col-lg-8">
+        <h3>How It Works</h3>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <div class="step-number">1</div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>Register Students</h5>
+                        <p>Add students to the database with their photos for face recognition training.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <div class="step-number">2</div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>Capture Group Photo</h5>
+                        <p>Take a photo of the entire class using camera or upload an existing image.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <div class="step-number">3</div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>Automatic Processing</h5>
+                        <p>The system detects and recognizes faces, matching them with registered students.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <div class="step-number">4</div>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h5>Generate Report</h5>
+                        <p>View instant attendance results and generate detailed reports for records.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <h3>Quick Actions</h3>
+        <div class="list-group">
+            <a href="{{ url_for('take_attendance') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-camera me-2 text-primary"></i>
+                Take New Attendance
+            </a>
+            <a href="{{ url_for('add_student') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-user-plus me-2 text-success"></i>
+                Add New Student
+            </a>
+            <a href="{{ url_for('students') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-users me-2 text-warning"></i>
+                Manage Students
+            </a>
+            <a href="{{ url_for('statistics') }}" class="list-group-item list-group-item-action">
+                <i class="fas fa-chart-bar me-2 text-info"></i>
+                View Reports
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .step-number {
+        width: 30px;
+        height: 30px;
+        background: #007bff;
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}

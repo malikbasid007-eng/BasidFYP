@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Student{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Edit Student: {{ student.name }}</h1>
+        <a href="{{ url_for('students') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to All Students
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Edit Student Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Student Details</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" enctype="multipart/form-data">
+                
+                <!-- Student ID (Read-only) -->
+                <div class="form-group row">
+                    <label for="student_id" class="col-sm-3 col-form-label">Student ID</label>
+                    <div class="col-sm-9">
+                        <input type="text" readonly class="form-control-plaintext" id="student_id" value="{{ student.student_id }}">
+                    </div>
+                </div>
+                
+                <!-- Full Name -->
+                <div class="form-group row">
+                    <label for="name" class="col-sm-3 col-form-label">Full Name *</label>
+                    <div class="col-sm-9">
+                        <input type="text" class="form-control" id="name" name="name" value="{{ student.name }}" required>
+                    </div>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group row">
+                    <label for="email" class="col-sm-3 col-form-label">Email Address *</label>
+                    <div class="col-sm-9">
+                        <input type="email" class="form-control" id="email" name="email" value="{{ student.email }}" required>
+                    </div>
+                </div>
+
+                <!-- Class -->
+                <div class="form-group row">
+                    <label for="class_name" class="col-sm-3 col-form-label">Class *</label>
+                    <div class="col-sm-9">
+                        <select class="form-control" id="class_name" name="class_name" required>
+                            <option value="" disabled>Select a class</option>
+                            {% for class_obj in available_classes %}
+                                <option value="{{ class_obj.class_name }}" {% if class_obj.class_name == student.class_name %}selected{% endif %}>
+                                    {{ class_obj.class_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Student Image -->
+                <div class="form-group row">
+                    <label for="image" class="col-sm-3 col-form-label">Update Student Image</label>
+                    <div class="col-sm-9">
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="image" name="image" onchange="updateFileName(this)">
+                            <label class="custom-file-label" for="image">Choose new image...</label>
+                        </div>
+                        <small class="form-text text-muted">
+                            Upload a new image only if you want to replace the current one. The image should clearly show the student's face.
+                        </small>
+                    </div>
+                </div>
+
+                <!-- Current Image Preview -->
+                {% if student.image_path %}
+                <div class="form-group row">
+                    <label class="col-sm-3 col-form-label">Current Image</label>
+                    <div class="col-sm-9">
+                        <img src="{{ url_for('serve_student_image', filename=student.image_path.split('/')[-1]) }}" 
+                             alt="Current image of {{ student.name }}" 
+                             class="img-thumbnail" 
+                             style="max-width: 150px; max-height: 150px;">
+                    </div>
+                </div>
+                {% endif %}
+                
+                <hr>
+                
+                <!-- Submit Button -->
+                <div class="form-group row">
+                    <div class="col-sm-9 offset-sm-3">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="{{ url_for('students') }}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function updateFileName(input) {
+    var fileName = input.files[0].name;
+    var label = $(input).next('.custom-file-label');
+    label.html(fileName);
+}
+</script>
+{% endblock %}
+

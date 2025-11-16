@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Classes{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Class Management</h1>
+        <a href="{{ url_for('add_class') }}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Add New Class
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Classes Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                {% if user.role == 'admin' %}All Classes{% else %}My Classes{% endif %}
+            </h6>
+        </div>
+        <div class="card-body">
+            {% if classes %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Class Name</th>
+                                <th>Subject</th>
+                                <th>Academic Year</th>
+                                <th>Semester</th>
+                                {% if user.role == 'admin' %}
+                                    <th>Teacher</th>
+                                {% endif %}
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for class in classes %}
+                            <tr>
+                                <td>
+                                    <strong>{{ class.class_name }}</strong>
+                                </td>
+                                <td>{{ class.subject or '-' }}</td>
+                                <td>{{ class.academic_year or '-' }}</td>
+                                <td>{{ class.semester or '-' }}</td>
+                                {% if user.role == 'admin' %}
+                                    <td>{{ class.teacher.full_name if class.teacher else 'Unknown' }}</td>
+                                {% endif %}
+                                <td>
+                                    {% if class.is_active %}
+                                        <span class="badge badge-success">Active</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactive</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ class.created_at.strftime('%m/%d/%Y') if class.created_at else '-' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <!-- Edit Button -->
+                                        {% if user.role == 'admin' or class.teacher_id == user.id %}
+                                            <a href="{{ url_for('edit_class', class_id=class.id) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="Edit Class">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        {% endif %}
+                                        
+                                        <!-- View Students in Class -->
+                                        <a href="{{ url_for('students') }}?class={{ class.class_name }}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="View Students">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                        
+                                        <!-- Delete Button -->
+                                        {% if user.role == 'admin' or class.teacher_id == user.id %}
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger" 
+                                                    title="Delete Class"
+                                                    data-toggle="modal" 
+                                                    data-target="#deleteModal{{ class.id }}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-chalkboard-teacher fa-3x text-gray-300 mb-3"></i>
+                    <h5 class="text-gray-600">No Classes Found</h5>
+                    <p class="text-gray-500 mb-3">
+                        {% if user.role == 'admin' %}
+                            No classes have been created yet.
+                        {% else %}
+                            You don't have any classes assigned yet.
+                        {% endif %}
+                    </p>
+                    <a href="{{ url_for('add_class') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add First Class
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    {% if classes %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Classes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ classes|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chalkboard fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Active Classes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ classes|selectattr("is_active")|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Subjects</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                {{ classes|map(attribute='subject')|select|unique|list|length }}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-book fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modals -->
+{% for class in classes %}
+<div class="modal fade" id="deleteModal{{ class.id }}" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel{{ class.id }}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModalLabel{{ class.id }}">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete the class "{{ class.class_name }}"?
+                <br><br>
+                <strong>Warning:</strong> This action cannot be undone and may affect related attendance records.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form method="POST" action="{{ url_for('delete_class', class_id=class.id) }}" style="display: inline;">
+                    <button type="submit" class="btn btn-danger">Delete Class</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+{% endblock %}
+
+{% block scripts %}
+<!-- DataTables JavaScript -->
+<script>
+$(document).ready(function() {
+    $('#dataTable').DataTable({
+        "pageLength": 25,
+        "order": [[ 6, "desc" ]], // Sort by created date descending
+        "columnDefs": [
+            { "orderable": false, "targets": -1 } // Disable sorting on Actions column
+        ]
+    });
+});
+</script>
+{% endblock %}

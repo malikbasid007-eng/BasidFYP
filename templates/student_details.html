@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.name }} - Student Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Student Profile Header -->
+        <div class="card mb-4 border-primary">
+            <div class="card-header bg-primary text-white">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h4 class="mb-0">
+                            <i class="fas fa-user me-2"></i>
+                            Student Profile
+                        </h4>
+                    </div>
+                    <div class="col-auto">
+                        <a href="{{ url_for('students') }}" class="btn btn-light">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Students
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        {% if student.image_path %}
+                        <img src="{{ url_for('serve_student_image', filename=student.image_path.split('/')[-1]) }}" 
+                             alt="{{ student.name }}" 
+                             class="img-fluid rounded-circle mb-3" 
+                             style="width: 150px; height: 150px; object-fit: cover;"
+                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 150px; height: 150px; display: none;">
+                            <i class="fas fa-user fa-4x text-white"></i>
+                        </div>
+                        {% else %}
+                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center mx-auto mb-3" 
+                             style="width: 150px; height: 150px;">
+                            <i class="fas fa-user fa-4x text-white"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>Personal Information</h5>
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Student ID:</strong></td>
+                                        <td>{{ student.student_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Full Name:</strong></td>
+                                        <td>{{ student.name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Email:</strong></td>
+                                        <td>{{ student.email }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Class:</strong></td>
+                                        <td><span class="badge bg-info">{{ student.class_name }}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Registered:</strong></td>
+                                        <td>{{ student.created_at.strftime('%B %d, %Y') }}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Attendance Summary</h5>
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <div class="border rounded p-3 mb-2">
+                                            <div class="h4 text-success">{{ attendance_history|selectattr('0.is_present')|list|length }}</div>
+                                            <small class="text-muted">Present</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="border rounded p-3 mb-2">
+                                            <div class="h4 text-danger">{{ attendance_history|length - attendance_history|selectattr('0.is_present')|list|length }}</div>
+                                            <small class="text-muted">Absent</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="border rounded p-3 mb-2">
+                                            <div class="h4 text-primary">{{ "%.1f"|format(attendance_percentage) }}%</div>
+                                            <small class="text-muted">Attendance Rate</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Progress Bar -->
+                                <div class="progress mb-3 attendance-progress">
+                                    <div class="progress-bar {{ 'bg-success' if attendance_percentage >= 80 else 'bg-warning' if attendance_percentage >= 60 else 'bg-danger' }}" 
+                                         data-width="{{ attendance_percentage|round(1) }}">
+                                        {{ "%.1f"|format(attendance_percentage) }}%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance History -->
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>
+                    Attendance History
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if attendance_history %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Session Name</th>
+                                <th>Class</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Status</th>
+                                <th>Confidence</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record, session in attendance_history %}
+                            <tr class="{{ 'table-success' if record.is_present else 'table-danger' }}">
+                                <td><strong>{{ session.session_name }}</strong></td>
+                                <td><span class="badge bg-secondary">{{ session.class_name }}</span></td>
+                                <td>{{ session.date.strftime('%Y-%m-%d') }}</td>
+                                <td>{{ session.time.strftime('%H:%M') }}</td>
+                                <td>
+                                    {% if record.is_present %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check me-1"></i>Present
+                                    </span>
+                                    {% else %}
+                                    <span class="badge bg-danger">
+                                        <i class="fas fa-times me-1"></i>Absent
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if record.confidence_score > 0 %}
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ "%.1f"|format(record.confidence_score * 100) }}%</span>
+                                        <div class="progress confidence-progress">
+                                            <div class="progress-bar {{ 'bg-success' if record.confidence_score > 0.7 else 'bg-warning' if record.confidence_score > 0.5 else 'bg-danger' }}" 
+                                                 data-width="{{ (record.confidence_score * 100)|round(1) }}"></div>
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{{ url_for('view_attendance', session_id=session.id) }}" 
+                                       class="btn btn-sm btn-outline-primary" title="View Session Details">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Attendance Statistics Chart -->
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <h6>Monthly Attendance Trend</h6>
+                        <div class="d-flex align-items-end" style="height: 100px;">
+                            {% set months = [] %}
+                            {% for record, session in attendance_history %}
+                                {% set month = session.date.strftime('%Y-%m') %}
+                                {% if month not in months %}
+                                    {% set _ = months.append(month) %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% for month in months[-6:] %}
+                                {% set month_sessions = [] %}
+                                {% for record, session in attendance_history %}
+                                    {% if session.date.strftime('%Y-%m') == month %}
+                                        {% set _ = month_sessions.append((record, session)) %}
+                                    {% endif %}
+                                {% endfor %}
+                                {% set present_count = month_sessions|selectattr('0.is_present')|list|length %}
+                                {% set total_count = month_sessions|length %}
+                                {% set percentage = (present_count / total_count * 100) if total_count > 0 else 0 %}
+                                
+                                <div class="flex-fill text-center me-1">
+                                    <div class="bg-primary chart-bar" data-height="{{ percentage|round(1) }}"></div>
+                                    <small>{{ month[-2:] }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <h6>Attendance by Day of Week</h6>
+                        <div class="row">
+                            {% set days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] %}
+                            {% for day in days %}
+                                {% set day_sessions = attendance_history|selectattr('1.date')|list %}
+                                {% set day_count = day_sessions|length // 7 %}
+                                {% set present_day = day_sessions|selectattr('0.is_present')|list|length // 7 %}
+                                {% set day_percentage = (present_day / day_count * 100) if day_count > 0 else 0 %}
+                                
+                                <div class="col-12 mb-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small>{{ day[:3] }}</small>
+                                        <div class="progress flex-fill ms-2 day-progress">
+                                            <div class="progress-bar bg-info" data-width="{{ (day_percentage if day_percentage > 0 else 20)|round(1) }}"></div>
+                                        </div>
+                                        <small class="ms-2">{{ "%.0f"|format(day_percentage if day_percentage > 0 else 0) }}%</small>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-calendar-times fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No Attendance Records</h4>
+                    <p class="text-muted mb-4">This student has no attendance records yet.</p>
+                    <a href="{{ url_for('take_attendance') }}" class="btn btn-primary">
+                        <i class="fas fa-camera me-2"></i>Take Attendance
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="{{ url_for('students') }}" class="btn btn-secondary me-2">
+                    <i class="fas fa-list me-2"></i>All Students
+                </a>
+                <a href="{{ url_for('take_attendance') }}" class="btn btn-success me-2">
+                    <i class="fas fa-camera me-2"></i>Take Attendance
+                </a>
+                <button class="btn btn-info" onclick="window.print()">
+                    <i class="fas fa-print me-2"></i>Print Profile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .attendance-progress {
+        height: 15px;
+    }
+    
+    .confidence-progress {
+        width: 60px;
+        height: 6px;
+    }
+    
+    .day-progress {
+        height: 8px;
+    }
+    
+    .chart-bar {
+        min-height: 5px;
+        margin-bottom: 5px;
+    }
+    
+    @media print {
+        .btn {
+            display: none !important;
+        }
+        
+        .card {
+            border: 1px solid #dee2e6 !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
+<script>
+    // Set dynamic styles from data attributes
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set progress bar widths
+        document.querySelectorAll('.progress-bar[data-width]').forEach(function(bar) {
+            bar.style.width = bar.getAttribute('data-width') + '%';
+        });
+        
+        // Set chart bar heights
+        document.querySelectorAll('.chart-bar[data-height]').forEach(function(bar) {
+            bar.style.height = bar.getAttribute('data-height') + '%';
+        });
+    });
+</script>
+{% endblock %}
